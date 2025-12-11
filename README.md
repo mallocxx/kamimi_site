@@ -1,91 +1,43 @@
 # CTF Competition Landing Page
 
-Одностраничный сайт-визитка для регистрации на CTF соревнования с HTTPS поддержкой и отправкой email уведомлений.
+Одностраничный сайт-визитка для регистрации на CTF соревнования с отправкой email уведомлений.
 
 ## Технологии
 
 - **Frontend**: Vue 3 + Tailwind CSS
-- **Backend**: Flask (Python)
-- **HTTPS**: TLS/SSL сертификаты
-- **Email**: SMTP через TLS
+- **Backend**: PHP (PHPMailer) в каталоге `mail/`, поднимается через Docker Compose (nginx + php-fpm)
+- **Email**: SMTP (по умолчанию пример с Яндекс, можно заменить на свой)
 
 ## Установка
 
-### Backend
-
-1. Создайте виртуальное окружение:
+### Backend (mail)
 ```bash
-python3 -m venv venv
-source venv/bin/activate  # Linux/Mac
-# или
-venv\Scripts\activate  # Windows
+cd mail
+docker compose up -d
 ```
-
-2. Установите зависимости:
-```bash
-pip install -r requirements.txt
-```
-
-3. Создайте файл `.env` на основе `.env.example` и заполните данные для отправки email:
-```bash
-cp .env.example .env
-```
-
-Для Gmail нужно использовать App Password вместо обычного пароля.
+Переменные окружения для SMTP задаются в `mail/docker-compose.yml` (`SMTP_USERNAME`, `SMTP_PASSWORD`).
 
 ### Frontend
-
-1. Установите зависимости:
 ```bash
 npm install
 ```
 
-## Запуск
+## Запуск (dev)
 
-### Разработка
-
-1. Запустите backend (в одном терминале):
+1) Backend (mail):
 ```bash
-python app.py
+cd mail
+docker compose up -d
 ```
 
-2. Запустите frontend (в другом терминале):
+2) Frontend:
 ```bash
 npm run dev
 ```
 
-При первом запуске Flask создаст самоподписанный SSL сертификат для разработки.
+## Продакшен
 
-### Продакшен
-
-Для продакшена рекомендуется использовать:
-
-1. **Nginx** как reverse proxy с Let's Encrypt сертификатами
-2. **Gunicorn** для запуска Flask приложения
-3. Настоящие SSL сертификаты от Let's Encrypt
-
-Пример конфигурации Nginx:
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name your-domain.com;
-
-    ssl_certificate /etc/letsencrypt/live/your-domain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/your-domain.com/privkey.pem;
-
-    location / {
-        proxy_pass http://127.0.0.1:5173;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-
-    location /api {
-        proxy_pass http://127.0.0.1:5000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-    }
-}
-```
+Рекомендуется разместить собранный фронтенд как статику за Nginx и проксировать `/api` на PHP (nginx + php-fpm). Сертификаты — через Let's Encrypt (`certbot --nginx -d your-domain.com`).
 
 ## Структура проекта
 
@@ -95,15 +47,17 @@ kamimi_site/
 │   ├── App.vue      # Главный компонент
 │   ├── main.js      # Точка входа
 │   └── style.css    # Стили
-├── app.py           # Flask backend
-├── requirements.txt # Python зависимости
+├── mail/            # PHP backend (nginx + php-fpm + PHPMailer)
+│   ├── public/      # index.php — точка входа API
+│   ├── src/         # FormHandler.php, Mailer.php
+│   ├── docker-compose.yml
+│   └── nginx/       # default.conf
 ├── package.json     # Node зависимости
-└── .env            # Конфигурация (не в git)
+└── README.md
 ```
 
 ## Особенности
 
-- ✅ HTTPS/TLS защищенное соединение
 - ✅ Отправка email уведомлений организатору
 - ✅ Современный дизайн с градиентами и анимациями
 - ✅ Адаптивная верстка

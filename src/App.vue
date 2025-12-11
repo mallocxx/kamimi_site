@@ -340,12 +340,19 @@ const submitRegistration = async () => {
   message.value = ''
   
   try {
+    const payload = {
+      name: form.name,
+      email: form.email,
+      experience: form.experience,
+      extra: form.message,
+    }
+
     const response = await fetch('/api/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(form)
+      body: JSON.stringify(payload)
     })
 
     const text = await response.text()

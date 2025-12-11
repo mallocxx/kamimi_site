@@ -9,13 +9,14 @@
 
 ### Вариант 2: Вручную (в двух терминалах)
 
-**Терминал 1 - Backend:**
+**Терминал 1 - Backend (mail, PHP + nginx через Docker Compose):**
 ```bash
-python3 app.py
+cd mail
+docker compose up -d
 ```
-Backend будет доступен на: `https://127.0.0.1:5000`
+Backend будет доступен на: `http://127.0.0.1:8080`
 
-**Терминал 2 - Frontend:**
+**Терминал 2 - Frontend (Vite dev):**
 ```bash
 npm run dev
 ```
@@ -24,33 +25,32 @@ Frontend будет доступен на: `http://127.0.0.1:5173`
 ## Доступ к сайту
 
 После запуска откройте в браузере:
-- **Frontend**: http://127.0.0.1:5173
-- **Backend API**: https://127.0.0.1:5000
+- **Frontend (dev)**: http://127.0.0.1:5173
+- **Backend API (mail/nginx)**: http://127.0.0.1:8080
 
-**Важно**: При первом запуске Flask создаст самоподписанный SSL сертификат. Браузер покажет предупреждение о безопасности - это нормально для разработки. Нажмите "Продолжить" или "Advanced" → "Proceed to 127.0.0.1".
+**Важно**: Backend из каталога `mail` поднимается через Docker Compose (nginx + php-fpm + PHPMailer). Для продакшена используйте Nginx + Let’s Encrypt (см. пример конфигурации в README.md).
 
 ## Настройка email (опционально)
 
-Если хотите получать email уведомления о регистрациях:
+Если хотите получать email уведомления о регистрациях (через PHPMailer, SMTP Яндекса по умолчанию):
 
-1. Создайте файл `.env`:
-```bash
-cp .env.example .env
+1. В файле `mail/docker-compose.yml` задайте переменные окружения:
 ```
-
-2. Заполните данные в `.env`:
-```
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-ORGANIZER_EMAIL=your-email@example.com
-SMTP_USERNAME=your-email@gmail.com
+SMTP_USERNAME=your-email@example.com
 SMTP_PASSWORD=your-app-password
 ```
-
-**Примечание**: Для Gmail нужно использовать App Password вместо обычного пароля.
+2. Перезапустите backend:
+```bash
+cd mail
+docker compose down
+docker compose up -d
+```
 
 ## Остановка серверов
 
-- Если используете скрипт `start.sh`: нажмите `Ctrl+C`
-- Если запускали вручную: нажмите `Ctrl+C` в каждом терминале
+- Если используете скрипт `start.sh`: нажмите `Ctrl+C` (frontend остановится), затем:
+```bash
+cd mail && docker compose down
+```
+- Если запускали вручную: `Ctrl+C` в терминале с `npm run dev` и `docker compose down` в каталоге `mail`
 
