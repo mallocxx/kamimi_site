@@ -346,8 +346,8 @@ const submitRegistration = async () => {
       experience: form.experience,
       extra: form.message,
     }
-
-    const response = await fetch('/api/register', {
+    // const response = await fetch('/api/register', {
+    const response = await fetch('https://localhost:443', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
